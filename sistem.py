@@ -5,6 +5,7 @@
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -84,3 +85,28 @@ coef = pd.DataFrame({
 
 print("\n===== KOEFISIEN REGRESI =====")
 print(coef)
+
+# ==============================
+# 9. Grafik Prediksi vs Aktual
+# ==============================
+
+plt.figure()
+plt.scatter(y_test, y_pred)
+plt.xlabel("Nilai Aktual")
+plt.ylabel("Nilai Prediksi")
+plt.title("Grafik Prediksi vs Aktual")
+plt.show()
+
+# ==============================
+# 10. Grafik Residual
+# ==============================
+
+residual = y_test - y_pred
+
+plt.figure()
+plt.scatter(y_pred, residual)
+plt.xlabel("Nilai Prediksi")
+plt.ylabel("Residual")
+plt.title("Grafik Residual")
+plt.axhline(y=0)
+plt.show()
