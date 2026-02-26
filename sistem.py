@@ -1,7 +1,6 @@
 # ==========================================
 # REGRESI LINEAR BERGANDA - PREDIKSI BIAYA ASURANSI
 # ==========================================
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +10,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
-
 
 # ==========================================
 # 1. LOAD DATASET
@@ -46,7 +44,7 @@ plt.show()
 
 # Korelasi antar fitur
 plt.figure()
-sns.heatmap(df.corr(), annot=True)
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm') # Tambahkan numeric_only
 plt.title('Korelasi Antar Fitur')
 plt.show()
 
@@ -107,16 +105,10 @@ y_pred = model.predict(X_test)
 # ==========================================
 # 9. EVALUASI MODEL
 # ==========================================
-mae = mean_absolute_error(y_test, y_pred)
-mse = mean_squared_error(y_test, y_pred)
-rmse = np.sqrt(mse)
-r2 = r2_score(y_test, y_pred)
-
-print("\n===== HASIL EVALUASI MODEL =====")
-print(f"MAE  : {mae:.2f}")
-print(f"MSE  : {mse:.2f}")
-print(f"RMSE : {rmse:.2f}")
-print(f"R2   : {r2:.4f}")
+plt.figure()
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm') # Tambahkan numeric_only
+plt.title('Korelasi Antar Fitur')
+plt.show()
 
 
 # ==========================================
