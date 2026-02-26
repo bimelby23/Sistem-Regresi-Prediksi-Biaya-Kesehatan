@@ -4,9 +4,13 @@
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.preprocessing import StandardScaler
 
 
 # ==========================================
@@ -16,17 +20,46 @@ df = pd.read_csv("archive/insurance.csv")
 
 print("===== DATA AWAL =====")
 print(df.head())
+print("\nINFO DATASET")
+print(df.info())
 
 
 # ==========================================
-# 2. CEK MISSING VALUE
+# 2. VISUALISASI DESKRIPSI DATA
+# ==========================================
+
+# Distribusi biaya asuransi
+plt.figure()
+df['charges'].hist(bins=30)
+plt.title('Distribusi Biaya Asuransi')
+plt.xlabel('Charges')
+plt.ylabel('Frequency')
+plt.show()
+
+# Distribusi umur
+plt.figure()
+df['age'].hist(bins=30)
+plt.title('Distribusi Umur')
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.show()
+
+# Korelasi antar fitur
+plt.figure()
+sns.heatmap(df.corr(), annot=True)
+plt.title('Korelasi Antar Fitur')
+plt.show()
+
+
+# ==========================================
+# 3. CEK MISSING VALUE
 # ==========================================
 print("\n===== CEK MISSING VALUE =====")
 print(df.isnull().sum())
 
 
 # ==========================================
-# 3. ENCODING DATA KATEGORI
+# 4. ENCODING DATA KATEGORI
 # ==========================================
 df = pd.get_dummies(df, drop_first=True)
 
@@ -35,7 +68,7 @@ print(df.head())
 
 
 # ==========================================
-# 4. SPLIT DATA
+# 5. SPLIT DATA
 # ==========================================
 X = df.drop("charges", axis=1)
 y = df["charges"]
@@ -48,21 +81,31 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 
+from sklearn.ensemble import RandomForestRegressor
+
 # ==========================================
-# 5. TRAINING MODEL
+# 6. SCALING TIDAK DIPERLUKAN UNTUK RANDOM FOREST
 # ==========================================
-model = LinearRegression()
+
+# ==========================================
+# 7. TRAINING MODEL (RANDOM FOREST)
+# ==========================================
+model = RandomForestRegressor(
+    n_estimators=200,
+    random_state=42
+)
+
 model.fit(X_train, y_train)
 
 
 # ==========================================
-# 6. PREDIKSI
+# 8. PREDIKSI
 # ==========================================
 y_pred = model.predict(X_test)
 
 
 # ==========================================
-# 7. EVALUASI MODEL
+# 9. EVALUASI MODEL
 # ==========================================
 mae = mean_absolute_error(y_test, y_pred)
 mse = mean_squared_error(y_test, y_pred)
@@ -77,10 +120,10 @@ print(f"R2   : {r2:.4f}")
 
 
 # ==========================================
-# 8. KOEFISIEN REGRESI
+# 10. KOEFISIEN REGRESI
 # ==========================================
 coef = pd.DataFrame({
-    "Fitur": X.columns,
+    "Fitur": df.drop("charges", axis=1).columns,
     "Koefisien": model.coef_
 })
 
@@ -88,6 +131,17 @@ coef = coef.sort_values(by="Koefisien", ascending=False)
 
 print("\n===== KOEFISIEN REGRESI =====")
 print(coef)
+
+
+# ==========================================
+# 11. VISUALISASI PREDIKSI VS ASLI
+# ==========================================
+plt.figure()
+plt.scatter(y_test, y_pred)
+plt.title('Prediksi vs Aktual')
+plt.xlabel('Aktual')
+plt.ylabel('Prediksi')
+plt.show()
 
 
 # ==========================================
