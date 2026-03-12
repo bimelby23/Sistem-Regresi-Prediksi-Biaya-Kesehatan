@@ -1,5 +1,10 @@
 # ==========================================
-# REGRESI LINEAR BERGANDA - PREDIKSI BIAYA ASURANSI
+# REGRESI LINEAR BERGANDA
+# PREDIKSI BIAYA ASURANSI
+# ==========================================
+
+# ==========================================
+# 1. IMPORT LIBRARY
 # ==========================================
 import pandas as pd
 import numpy as np
@@ -11,53 +16,81 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 
+sns.set(style="whitegrid")
+
+
 # ==========================================
-# 1. LOAD DATASET
+# 2. LOAD DATASET
 # ==========================================
 df = pd.read_csv("archive/insurance.csv")
 
 print("===== DATA AWAL =====")
 print(df.head())
-print("\nINFO DATASET")
+
+print("\n===== INFO DATASET =====")
 print(df.info())
 
 
 # ==========================================
-# 2. VISUALISASI DESKRIPSI DATA
+# 3. DESKRIPSI STATISTIK DATA
+# ==========================================
+print("\n===== DESKRIPSI STATISTIK =====")
+print(df.describe())
+
+
+# ==========================================
+# 4. VISUALISASI DATA
 # ==========================================
 
 # Distribusi biaya asuransi
-plt.figure()
-df['charges'].hist(bins=30)
-plt.title('Distribusi Biaya Asuransi')
-plt.xlabel('Charges')
-plt.ylabel('Frequency')
+plt.figure(figsize=(6,4))
+sns.histplot(df['charges'], kde=True)
+plt.title("Distribusi Biaya Asuransi")
 plt.show()
 
 # Distribusi umur
-plt.figure()
-df['age'].hist(bins=30)
-plt.title('Distribusi Umur')
-plt.xlabel('Age')
-plt.ylabel('Frequency')
+plt.figure(figsize=(6,4))
+sns.histplot(df['age'], kde=True)
+plt.title("Distribusi Umur")
 plt.show()
 
-# Korelasi antar fitur
-plt.figure()
-sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm') # Tambahkan numeric_only
-plt.title('Korelasi Antar Fitur')
+# Distribusi BMI
+plt.figure(figsize=(6,4))
+sns.histplot(df['bmi'], kde=True)
+plt.title("Distribusi BMI")
+plt.show()
+
+# Hubungan BMI dengan Charges
+plt.figure(figsize=(6,4))
+sns.scatterplot(x="bmi", y="charges", data=df)
+plt.title("Hubungan BMI dengan Biaya Asuransi")
+plt.show()
+
+# Charges berdasarkan Smoker
+plt.figure(figsize=(6,4))
+sns.boxplot(x="smoker", y="charges", data=df)
+plt.title("Biaya Asuransi Berdasarkan Status Merokok")
 plt.show()
 
 
 # ==========================================
-# 3. CEK MISSING VALUE
+# 5. HEATMAP KORELASI
+# ==========================================
+plt.figure(figsize=(8,6))
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap="coolwarm")
+plt.title("Korelasi Antar Variabel")
+plt.show()
+
+
+# ==========================================
+# 6. CEK MISSING VALUE
 # ==========================================
 print("\n===== CEK MISSING VALUE =====")
 print(df.isnull().sum())
 
 
 # ==========================================
-# 4. ENCODING DATA KATEGORI
+# 7. ENCODING DATA KATEGORI
 # ==========================================
 df = pd.get_dummies(df, drop_first=True)
 
@@ -66,7 +99,7 @@ print(df.head())
 
 
 # ==========================================
-# 5. SPLIT DATA
+# 8. SPLIT DATA
 # ==========================================
 X = df.drop("charges", axis=1)
 y = df["charges"]
@@ -79,43 +112,47 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 
-from sklearn.ensemble import RandomForestRegressor
+# ==========================================
+# 9. SCALING DATA
+# ==========================================
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
 
 # ==========================================
-# 6. SCALING TIDAK DIPERLUKAN UNTUK RANDOM FOREST
+# 10. TRAINING MODEL
+# REGRESI LINEAR BERGANDA
 # ==========================================
-
-# ==========================================
-# 7. TRAINING MODEL (RANDOM FOREST)
-# ==========================================
-model = RandomForestRegressor(
-    n_estimators=200,
-    random_state=42
-)
-
+model = LinearRegression()
 model.fit(X_train, y_train)
 
 
 # ==========================================
-# 8. PREDIKSI
+# 11. PREDIKSI
 # ==========================================
 y_pred = model.predict(X_test)
 
 
 # ==========================================
-# 9. EVALUASI MODEL
+# 12. EVALUASI MODEL
 # ==========================================
-plt.figure()
-sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm') # Tambahkan numeric_only
-plt.title('Korelasi Antar Fitur')
-plt.show()
+mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+r2 = r2_score(y_test, y_pred)
+
+print("\n===== EVALUASI MODEL =====")
+print("MAE  :", mae)
+print("RMSE :", rmse)
+print("R2   :", r2)
 
 
 # ==========================================
-# 10. KOEFISIEN REGRESI
+# 13. KOEFISIEN REGRESI
 # ==========================================
 coef = pd.DataFrame({
-    "Fitur": df.drop("charges", axis=1).columns,
+    "Fitur": X.columns,
     "Koefisien": model.coef_
 })
 
@@ -126,13 +163,20 @@ print(coef)
 
 
 # ==========================================
-# 11. VISUALISASI PREDIKSI VS ASLI
+# 14. VISUALISASI PREDIKSI VS AKTUAL
 # ==========================================
-plt.figure()
+plt.figure(figsize=(6,5))
 plt.scatter(y_test, y_pred)
-plt.title('Prediksi vs Aktual')
-plt.xlabel('Aktual')
-plt.ylabel('Prediksi')
+
+plt.plot(
+    [y_test.min(), y_test.max()],
+    [y_test.min(), y_test.max()],
+    color='red'
+)
+
+plt.xlabel("Nilai Aktual")
+plt.ylabel("Nilai Prediksi")
+plt.title("Perbandingan Nilai Aktual vs Prediksi")
 plt.show()
 
 
